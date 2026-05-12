@@ -21,8 +21,9 @@ class NoteDatabaseService {
 
     return await openDatabase(
       path,
-      version: 1,
+      version: 2,
       onCreate: _createDB,
+      onUpgrade: _upgradeDB,
     );
   }
 
@@ -33,6 +34,32 @@ class NoteDatabaseService {
         note TEXT NOT NULL
       )
     ''');
+
+    await db.execute('''
+      CREATE TABLE tabungan (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        nama TEXT NOT NULL,
+        target REAL NOT NULL,
+        terkumpul REAL NOT NULL,
+        hari INTEGER NOT NULL,
+        gambar TEXT
+      )
+    ''');
+  }
+
+  Future<void> _upgradeDB(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      await db.execute('''
+        CREATE TABLE tabungan (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          nama TEXT NOT NULL,
+          target REAL NOT NULL,
+          terkumpul REAL NOT NULL,
+          hari INTEGER NOT NULL,
+          gambar TEXT
+        )
+      ''');
+    }
   }
 
   Future<Map<String, String>> getAllNotes() async {
@@ -65,6 +92,35 @@ class NoteDatabaseService {
       'notes',
       where: 'date = ?',
       whereArgs: [date],
+    );
+  }
+
+  Future<int> insertTabungan(Map<String, dynamic> data) async {
+    final db = await database;
+    return await db.insert('tabungan', data);
+  }
+
+  Future<List<Map<String, dynamic>>> getAllTabungan() async {
+    final db = await database;
+    return await db.query('tabungan', orderBy: 'id DESC');
+  }
+
+  Future<void> updateTabungan(int id, Map<String, dynamic> data) async {
+    final db = await database;
+    await db.update(
+      'tabungan',
+      data,
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  Future<void> deleteTabungan(int id) async {
+    final db = await database;
+    await db.delete(
+      'tabungan',
+      where: 'id = ?',
+      whereArgs: [id],
     );
   }
 }

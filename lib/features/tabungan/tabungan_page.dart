@@ -1,7 +1,9 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
+
+import '../../core/services/note_database_service.dart';
+import 'tambah_page.dart';
 
 class TabunganPage extends StatefulWidget {
   const TabunganPage({super.key});
@@ -11,311 +13,283 @@ class TabunganPage extends StatefulWidget {
 }
 
 class _TabunganPageState extends State<TabunganPage> {
-  final TextEditingController namaController = TextEditingController();
-  final TextEditingController nominalController = TextEditingController();
-  final TextEditingController hariController = TextEditingController();
+  List<Map<String, dynamic>> daftarTabungan = [];
 
-  final ImagePicker picker = ImagePicker();
+  @override
+  void initState() {
+    super.initState();
+    loadTabungan();
+  }
 
-  File? gambarBarang;
+  Future<void> loadTabungan() async {
+    final data = await NoteDatabaseService.instance.getAllTabungan();
 
-  String namaBarang = '';
-  String nominalBarang = '';
-  String jumlahHari = '';
+    if (!mounted) return;
 
-  double nominalValue = 0;
-  double tabunganPerHari = 0;
+    setState(() {
+      daftarTabungan = data;
+    });
+  }
 
-  Future<void> pilihGambar() async {
-    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+  Future<void> tambahTabungan() async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const TambahPage(),
+      ),
+    );
 
-    if (image != null) {
-      setState(() {
-        gambarBarang = File(image.path);
-      });
+    if (result == true) {
+      loadTabungan();
     }
   }
 
-  void hapusGambar() {
-    setState(() {
-      gambarBarang = null;
-    });
+  Future<void> editTabungan(Map<String, dynamic> item) async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => TambahPage(item: item),
+      ),
+    );
+
+    if (result == true) {
+      loadTabungan();
+    }
   }
 
-  void tambahNominal() {
-    setState(() {
-      nominalValue = double.tryParse(nominalController.text) ?? 0;
-      nominalValue += 10000;
-      nominalController.text = nominalValue.toStringAsFixed(0);
-    });
+  Future<void> tambahSaldo(Map<String, dynamic> item) async {
+    await showSaldoDialog(item, true);
   }
 
-  void kurangNominal() {
-    setState(() {
-      nominalValue = double.tryParse(nominalController.text) ?? 0;
-      nominalValue -= 10000;
-
-      if (nominalValue < 0) {
-        nominalValue = 0;
-      }
-
-      nominalController.text = nominalValue.toStringAsFixed(0);
-    });
+  Future<void> kurangSaldo(Map<String, dynamic> item) async {
+    await showSaldoDialog(item, false);
   }
 
-  void simpanData() {
-    setState(() {
-      namaBarang = namaController.text;
+  Future<void> showSaldoDialog(Map<String, dynamic> item, bool tambah) async {
+    final controller = TextEditingController();
 
-      nominalValue = double.tryParse(nominalController.text) ?? 0;
-      nominalBarang = nominalValue.toStringAsFixed(0);
-
-      jumlahHari = hariController.text;
-
-      int hari = int.tryParse(hariController.text) ?? 1;
-
-      if (hari <= 0) {
-        hari = 1;
-      }
-
-      tabunganPerHari = nominalValue / hari;
-    });
-  }
-
-  void editData() {
-    setState(() {
-      namaController.text = namaBarang;
-      nominalController.text = nominalBarang;
-      hariController.text = jumlahHari;
-    });
-  }
-
-  @override
-  void dispose() {
-    namaController.dispose();
-    nominalController.dispose();
-    hariController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        children: [
-          Stack(
-            children: [
-              GestureDetector(
-                onTap: pilihGambar,
-                child: Container(
-                  height: 180,
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade200,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.grey),
-                  ),
-                  child: gambarBarang == null
-                      ? const Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.add_photo_alternate, size: 50),
-                            SizedBox(height: 8),
-                            Text('Pilih gambar barang'),
-                          ],
-                        )
-                      : ClipRRect(
-                          borderRadius: BorderRadius.circular(16),
-                          child: Image.file(
-                            gambarBarang!,
-                            fit: BoxFit.cover,
-                            width: double.infinity,
-                          ),
-                        ),
-                ),
-              ),
-
-              if (gambarBarang != null)
-                Positioned(
-                  top: 8,
-                  right: 8,
-                  child: CircleAvatar(
-                    backgroundColor: Colors.red,
-                    child: IconButton(
-                      icon: const Icon(Icons.delete, color: Colors.white),
-                      onPressed: hapusGambar,
-                    ),
-                  ),
-                ),
-            ],
-          ),
-
-          const SizedBox(height: 20),
-
-          TextField(
-            controller: namaController,
-            decoration: const InputDecoration(
-              labelText: 'Nama barang',
-              border: OutlineInputBorder(),
-            ),
-          ),
-
-          const SizedBox(height: 16),
-
-          TextField(
-            controller: nominalController,
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(tambah ? 'Tambah Tabungan' : 'Kurangi Tabungan'),
+          content: TextField(
+            controller: controller,
             keyboardType: TextInputType.number,
             decoration: const InputDecoration(
-              labelText: 'Nominal barang',
+              labelText: 'Nominal',
               prefixText: 'Rp ',
               border: OutlineInputBorder(),
             ),
           ),
-
-          const SizedBox(height: 10),
-
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: kurangNominal,
-                  icon: const Icon(Icons.remove),
-                  label: const Text('Kurang'),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: tambahNominal,
-                  icon: const Icon(Icons.add),
-                  label: const Text('Tambah'),
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 16),
-
-          TextField(
-            controller: hariController,
-            keyboardType: TextInputType.number,
-            decoration: const InputDecoration(
-              labelText: 'Target hari',
-              suffixText: 'hari',
-              border: OutlineInputBorder(),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text('Batal'),
             ),
-          ),
+            ElevatedButton(
+              onPressed: () async {
+                final nominal = double.tryParse(controller.text) ?? 0;
+                double saldo = (item['terkumpul'] as num).toDouble();
 
-          const SizedBox(height: 20),
+                if (tambah) {
+                  saldo += nominal;
+                } else {
+                  saldo -= nominal;
 
-          Row(
-            children: [
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: simpanData,
-                  child: const Text('Simpan'),
-                ),
+                  if (saldo < 0) {
+                    saldo = 0;
+                  }
+                }
+
+                await NoteDatabaseService.instance.updateTabungan(
+                  item['id'],
+                  {
+                    'nama': item['nama'],
+                    'target': item['target'],
+                    'terkumpul': saldo,
+                    'hari': item['hari'],
+                    'gambar': item['gambar'],
+                  },
+                );
+
+                if (!mounted) return;
+
+                Navigator.pop(context);
+                loadTabungan();
+              },
+              child: const Text('Simpan'),
+            ),
+          ],
+        );
+      },
+    );
+
+    controller.dispose();
+  }
+
+  Future<void> hapusTabungan(int id) async {
+    await NoteDatabaseService.instance.deleteTabungan(id);
+    loadTabungan();
+  }
+
+  String formatRupiah(num value) {
+    return value.toStringAsFixed(0).replaceAllMapped(
+          RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
+          (match) => '${match[1]}.',
+        );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: daftarTabungan.isEmpty
+          ? const Center(
+              child: Text(
+                'Belum ada celengan',
+                style: TextStyle(fontSize: 18),
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: OutlinedButton(
-                  onPressed: editData,
-                  child: const Text('Edit'),
-                ),
-              ),
-            ],
-          ),
+            )
+          : ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: daftarTabungan.length,
+              itemBuilder: (context, index) {
+                final item = daftarTabungan[index];
 
-          const SizedBox(height: 30),
+                final target = (item['target'] as num).toDouble();
+                final terkumpul = (item['terkumpul'] as num).toDouble();
+                final hari = item['hari'] as int;
 
-          if (namaBarang.isNotEmpty ||
-              nominalBarang.isNotEmpty ||
-              jumlahHari.isNotEmpty ||
-              gambarBarang != null)
-            Card(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  children: [
-                    if (gambarBarang != null)
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
-                        child: Image.file(
-                          gambarBarang!,
-                          height: 150,
-                          width: double.infinity,
-                          fit: BoxFit.cover,
-                        ),
-                      ),
+                final progress = target == 0 ? 0.0 : terkumpul / target;
+                final persen = (progress * 100).clamp(0, 100);
+                final sisa = target - terkumpul;
+                final perHari = sisa <= 0 ? 0 : sisa / hari;
 
-                    const SizedBox(height: 12),
-
-                    Text(
-                      namaBarang,
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-
-                    const SizedBox(height: 8),
-
-                    Text(
-                      'Harga barang: Rp $nominalBarang',
-                      style: const TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-
-                    const SizedBox(height: 8),
-
-                    Text(
-                      'Target: $jumlahHari hari',
-                      style: const TextStyle(fontSize: 18),
-                    ),
-
-                    const SizedBox(height: 8),
-
-                    Text(
-                      'Tabung per hari: Rp ${tabunganPerHari.toStringAsFixed(0)}',
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.green,
-                      ),
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    Row(
+                return Card(
+                  margin: const EdgeInsets.only(bottom: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  elevation: 4,
+                  child: Padding(
+                    padding: const EdgeInsets.all(14),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Expanded(
-                          child: OutlinedButton.icon(
-                            onPressed: pilihGambar,
-                            icon: const Icon(Icons.edit),
-                            label: const Text('Edit Gambar'),
+                        if (item['gambar'] != null &&
+                            item['gambar'].toString().isNotEmpty)
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(16),
+                            child: Image.file(
+                              File(item['gambar']),
+                              height: 160,
+                              width: double.infinity,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+
+                        const SizedBox(height: 12),
+
+                        Text(
+                          item['nama'],
+                          style: const TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: OutlinedButton.icon(
-                            onPressed: hapusGambar,
-                            icon: const Icon(Icons.delete),
-                            label: const Text('Hapus'),
+
+                        const SizedBox(height: 8),
+
+                        Text(
+                          'Rp ${formatRupiah(terkumpul)} / Rp ${formatRupiah(target)}',
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
                           ),
+                        ),
+
+                        const SizedBox(height: 10),
+
+                        LinearProgressIndicator(
+                          value: progress.clamp(0, 1),
+                          minHeight: 12,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+
+                        const SizedBox(height: 8),
+
+                        Text(
+                          '${persen.toStringAsFixed(0)}% terkumpul',
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+
+                        const SizedBox(height: 8),
+
+                        Text(
+                          sisa <= 0
+                              ? 'Target sudah tercapai!'
+                              : 'Sisa: Rp ${formatRupiah(sisa)}',
+                        ),
+
+                        Text(
+                          'Estimasi tabung per hari: Rp ${formatRupiah(perHari)}',
+                        ),
+
+                        const SizedBox(height: 14),
+
+                        Row(
+                          children: [
+                            Expanded(
+                              child: ElevatedButton.icon(
+                                onPressed: () => tambahSaldo(item),
+                                icon: const Icon(Icons.add),
+                                label: const Text('Tambah'),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: OutlinedButton.icon(
+                                onPressed: () => kurangSaldo(item),
+                                icon: const Icon(Icons.remove),
+                                label: const Text('Kurang'),
+                              ),
+                            ),
+                          ],
+                        ),
+
+                        const SizedBox(height: 8),
+
+                        Row(
+                          children: [
+                            Expanded(
+                              child: OutlinedButton.icon(
+                                onPressed: () => editTabungan(item),
+                                icon: const Icon(Icons.edit),
+                                label: const Text('Edit'),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: OutlinedButton.icon(
+                                onPressed: () => hapusTabungan(item['id']),
+                                icon: const Icon(Icons.delete),
+                                label: const Text('Hapus'),
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
-                  ],
-                ),
-              ),
+                  ),
+                );
+              },
             ),
-        ],
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: tambahTabungan,
+        icon: const Icon(Icons.add),
+        label: const Text('Celengan'),
       ),
     );
   }
