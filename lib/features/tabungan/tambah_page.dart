@@ -85,6 +85,7 @@ class _TambahPageState extends State<TambahPage> {
     }
 
     if (!mounted) return;
+
     Navigator.pop(context, true);
   }
 
@@ -98,10 +99,10 @@ class _TambahPageState extends State<TambahPage> {
 
   @override
   Widget build(BuildContext context) {
-    const bgColor = Color(0xFF140D08);
-    const cardColor = Color(0xFF5B4B3E);
-    const orange = Color(0xFFFFB36B);
-    const textColor = Color(0xFFEBDDD1);
+    const bgColor = Color(0xFFD6B18B);
+    const cardColor = Color(0xFFE7D3B5);
+    const orange = Color(0xFF6B4B3E);
+    const textColor = Color(0xFF5A4034);
 
     return Scaffold(
       backgroundColor: bgColor,
@@ -122,12 +123,15 @@ class _TambahPageState extends State<TambahPage> {
                       color: textColor,
                     ),
                   ),
+
                   const Spacer(),
+
                   ElevatedButton(
                     onPressed: simpanTabungan,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: orange,
-                      foregroundColor: Colors.black87,
+                      foregroundColor: Colors.white,
+                      elevation: 0,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(28),
                       ),
@@ -152,7 +156,7 @@ class _TambahPageState extends State<TambahPage> {
                   width: double.infinity,
                   decoration: BoxDecoration(
                     color: cardColor,
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(18),
                   ),
                   child: gambarPath == null
                       ? const Icon(
@@ -161,7 +165,7 @@ class _TambahPageState extends State<TambahPage> {
                           size: 52,
                         )
                       : ClipRRect(
-                          borderRadius: BorderRadius.circular(14),
+                          borderRadius: BorderRadius.circular(18),
                           child: Image.file(
                             File(gambarPath!),
                             fit: BoxFit.cover,
@@ -195,6 +199,7 @@ class _TambahPageState extends State<TambahPage> {
                 style: TextStyle(
                   color: textColor,
                   fontSize: 14,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
 
@@ -204,10 +209,11 @@ class _TambahPageState extends State<TambahPage> {
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 height: 62,
                 decoration: BoxDecoration(
+                  color: cardColor,
                   border: Border.all(
-                    color: const Color(0xFF9B8678),
+                    color: Color(0xFF8A6A58),
                   ),
-                  borderRadius: BorderRadius.circular(5),
+                  borderRadius: BorderRadius.circular(14),
                 ),
                 child: const Row(
                   children: [
@@ -215,7 +221,9 @@ class _TambahPageState extends State<TambahPage> {
                       '🇮🇩',
                       style: TextStyle(fontSize: 24),
                     ),
+
                     SizedBox(width: 14),
+
                     Expanded(
                       child: Text(
                         'Indonesia Rupiah ( Rp )',
@@ -225,6 +233,7 @@ class _TambahPageState extends State<TambahPage> {
                         ),
                       ),
                     ),
+
                     Icon(
                       Icons.keyboard_arrow_down,
                       color: textColor,
@@ -236,7 +245,7 @@ class _TambahPageState extends State<TambahPage> {
               const SizedBox(height: 32),
 
               const Divider(
-                color: Color(0xFF3A2A20),
+                color: Color(0xFFB38B6D),
               ),
 
               const SizedBox(height: 18),
@@ -253,12 +262,12 @@ class _TambahPageState extends State<TambahPage> {
               const SizedBox(height: 18),
 
               Container(
-                height: 44,
+                height: 48,
                 decoration: BoxDecoration(
                   border: Border.all(
-                    color: const Color(0xFF9B8678),
+                    color: const Color(0xFF8A6A58),
                   ),
-                  borderRadius: BorderRadius.circular(24),
+                  borderRadius: BorderRadius.circular(28),
                 ),
                 child: Row(
                   children: [
@@ -280,31 +289,38 @@ class _TambahPageState extends State<TambahPage> {
                       style: const TextStyle(
                         color: textColor,
                       ),
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: cardColor,
                         hintText: 'Nominal Pengisian',
-                        hintStyle: TextStyle(
-                          color: Color(0xFFD6C4B8),
+                        hintStyle: const TextStyle(
+                          color: Color(0xFF8A6A58),
                         ),
                         enabledBorder: OutlineInputBorder(
-                          borderSide: BorderSide(
-                            color: Color(0xFF9B8678),
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: const BorderSide(
+                            color: Color(0xFF8A6A58),
                           ),
                         ),
                         focusedBorder: OutlineInputBorder(
-                          borderSide: BorderSide(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: const BorderSide(
                             color: orange,
+                            width: 2,
                           ),
                         ),
                       ),
                     ),
                   ),
+
                   const SizedBox(width: 20),
+
                   const CircleAvatar(
                     radius: 24,
-                    backgroundColor: Color(0xFF6B4E35),
+                    backgroundColor: Color(0xFF8A6A58),
                     child: Icon(
                       Icons.event_available,
-                      color: textColor,
+                      color: Colors.white,
                     ),
                   ),
                 ],
@@ -322,8 +338,9 @@ class _TambahPageState extends State<TambahPage> {
     required TextEditingController controller,
     TextInputType keyboardType = TextInputType.text,
   }) {
-    const textColor = Color(0xFFEBDDD1);
-    const orange = Color(0xFFFFB36B);
+    const textColor = Color(0xFF5A4034);
+    const orange = Color(0xFF6B4B3E);
+    const cardColor = Color(0xFFE7D3B5);
 
     return Row(
       children: [
@@ -331,7 +348,9 @@ class _TambahPageState extends State<TambahPage> {
           icon,
           color: textColor,
         ),
+
         const SizedBox(width: 22),
+
         Expanded(
           child: TextField(
             controller: controller,
@@ -340,18 +359,23 @@ class _TambahPageState extends State<TambahPage> {
               color: textColor,
             ),
             decoration: InputDecoration(
+              filled: true,
+              fillColor: cardColor,
               hintText: hint,
               hintStyle: const TextStyle(
-                color: Color(0xFFD6C4B8),
+                color: Color(0xFF8A6A58),
               ),
-              enabledBorder: const OutlineInputBorder(
-                borderSide: BorderSide(
-                  color: Color(0xFF9B8678),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+                borderSide: const BorderSide(
+                  color: Color(0xFF8A6A58),
                 ),
               ),
-              focusedBorder: const OutlineInputBorder(
-                borderSide: BorderSide(
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+                borderSide: const BorderSide(
                   color: orange,
+                  width: 2,
                 ),
               ),
             ),
@@ -374,13 +398,15 @@ class _TambahPageState extends State<TambahPage> {
         child: Container(
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            color: selected ? const Color(0xFF6B4E35) : Colors.transparent,
-            borderRadius: BorderRadius.circular(22),
+            color: selected
+                ? const Color(0xFF8A6A58)
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(24),
           ),
           child: Text(
             value,
-            style: const TextStyle(
-              color: Color(0xFFEBDDD1),
+            style: TextStyle(
+              color: selected ? Colors.white : const Color(0xFF5A4034),
               fontWeight: FontWeight.bold,
             ),
           ),
