@@ -24,6 +24,38 @@ class _TambahPageState extends State<TambahPage> {
   String? gambarPath;
   String rencana = 'Harian';
 
+  String mataUang = 'Indonesia Rupiah';
+  String simbolMataUang = 'Rp';
+  String benderaMataUang = '🇮🇩';
+
+  final List<Map<String, String>> daftarMataUang = [
+    {
+      'nama': 'Indonesia Rupiah',
+      'simbol': 'Rp',
+      'bendera': '🇮🇩',
+    },
+    {
+      'nama': 'US Dollar',
+      'simbol': '\$',
+      'bendera': '🇺🇸',
+    },
+    {
+      'nama': 'Euro',
+      'simbol': '€',
+      'bendera': '🇪🇺',
+    },
+    {
+      'nama': 'Japanese Yen',
+      'simbol': '¥',
+      'bendera': '🇯🇵',
+    },
+    {
+      'nama': 'Malaysian Ringgit',
+      'simbol': 'RM',
+      'bendera': '🇲🇾',
+    },
+  ];
+
   @override
   void initState() {
     super.initState();
@@ -42,15 +74,62 @@ class _TambahPageState extends State<TambahPage> {
   }
 
   Future<void> pilihGambar() async {
-    final XFile? image = await picker.pickImage(
-      source: ImageSource.gallery,
-    );
+    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
 
     if (image != null) {
       setState(() {
         gambarPath = image.path;
       });
     }
+  }
+
+  void pilihMataUang() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFFE7D3B5),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return ListView.builder(
+          shrinkWrap: true,
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          itemCount: daftarMataUang.length,
+          itemBuilder: (context, index) {
+            final item = daftarMataUang[index];
+
+            return ListTile(
+              leading: Text(
+                item['bendera']!,
+                style: const TextStyle(fontSize: 28),
+              ),
+              title: Text(
+                item['nama']!,
+                style: const TextStyle(
+                  color: Color(0xFF5A4034),
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              subtitle: Text(
+                item['simbol']!,
+                style: const TextStyle(
+                  color: Color(0xFF8A6A58),
+                ),
+              ),
+              onTap: () {
+                setState(() {
+                  mataUang = item['nama']!;
+                  simbolMataUang = item['simbol']!;
+                  benderaMataUang = item['bendera']!;
+                });
+
+                Navigator.pop(context);
+              },
+            );
+          },
+        );
+      },
+    );
   }
 
   Future<void> simpanTabungan() async {
@@ -60,9 +139,7 @@ class _TambahPageState extends State<TambahPage> {
 
     if (nama.isEmpty || target <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Data belum lengkap'),
-        ),
+        const SnackBar(content: Text('Data belum lengkap')),
       );
       return;
     }
@@ -85,7 +162,6 @@ class _TambahPageState extends State<TambahPage> {
     }
 
     if (!mounted) return;
-
     Navigator.pop(context, true);
   }
 
@@ -115,17 +191,10 @@ class _TambahPageState extends State<TambahPage> {
               Row(
                 children: [
                   IconButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    icon: const Icon(
-                      Icons.arrow_back_ios,
-                      color: textColor,
-                    ),
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.arrow_back_ios, color: textColor),
                   ),
-
                   const Spacer(),
-
                   ElevatedButton(
                     onPressed: simpanTabungan,
                     style: ElevatedButton.styleFrom(
@@ -140,9 +209,7 @@ class _TambahPageState extends State<TambahPage> {
                         vertical: 14,
                       ),
                     ),
-                    child: Text(
-                      widget.item == null ? 'Simpan' : 'Update',
-                    ),
+                    child: Text(widget.item == null ? 'Simpan' : 'Update'),
                   ),
                 ],
               ),
@@ -205,48 +272,44 @@ class _TambahPageState extends State<TambahPage> {
 
               const SizedBox(height: 8),
 
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                height: 62,
-                decoration: BoxDecoration(
-                  color: cardColor,
-                  border: Border.all(
-                    color: Color(0xFF8A6A58),
+              GestureDetector(
+                onTap: pilihMataUang,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  height: 62,
+                  decoration: BoxDecoration(
+                    color: cardColor,
+                    border: Border.all(color: Color(0xFF8A6A58)),
+                    borderRadius: BorderRadius.circular(14),
                   ),
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: const Row(
-                  children: [
-                    Text(
-                      '🇮🇩',
-                      style: TextStyle(fontSize: 24),
-                    ),
-
-                    SizedBox(width: 14),
-
-                    Expanded(
-                      child: Text(
-                        'Indonesia Rupiah ( Rp )',
-                        style: TextStyle(
-                          color: textColor,
-                          fontSize: 16,
+                  child: Row(
+                    children: [
+                      Text(
+                        benderaMataUang,
+                        style: const TextStyle(fontSize: 24),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Text(
+                          '$mataUang ( $simbolMataUang )',
+                          style: const TextStyle(
+                            color: textColor,
+                            fontSize: 16,
+                          ),
                         ),
                       ),
-                    ),
-
-                    Icon(
-                      Icons.keyboard_arrow_down,
-                      color: textColor,
-                    ),
-                  ],
+                      const Icon(
+                        Icons.keyboard_arrow_down,
+                        color: textColor,
+                      ),
+                    ],
+                  ),
                 ),
               ),
 
               const SizedBox(height: 32),
 
-              const Divider(
-                color: Color(0xFFB38B6D),
-              ),
+              const Divider(color: Color(0xFFB38B6D)),
 
               const SizedBox(height: 18),
 
@@ -264,9 +327,7 @@ class _TambahPageState extends State<TambahPage> {
               Container(
                 height: 48,
                 decoration: BoxDecoration(
-                  border: Border.all(
-                    color: const Color(0xFF8A6A58),
-                  ),
+                  border: Border.all(color: const Color(0xFF8A6A58)),
                   borderRadius: BorderRadius.circular(28),
                 ),
                 child: Row(
@@ -286,16 +347,17 @@ class _TambahPageState extends State<TambahPage> {
                     child: TextField(
                       controller: nominalController,
                       keyboardType: TextInputType.number,
-                      style: const TextStyle(
-                        color: textColor,
-                      ),
+                      style: const TextStyle(color: textColor),
                       decoration: InputDecoration(
                         filled: true,
                         fillColor: cardColor,
-                        hintText: 'Nominal Pengisian',
-                        hintStyle: const TextStyle(
-                          color: Color(0xFF8A6A58),
+                        prefixText: '$simbolMataUang ',
+                        prefixStyle: const TextStyle(
+                          color: textColor,
+                          fontWeight: FontWeight.bold,
                         ),
+                        hintText: 'Nominal Pengisian',
+                        hintStyle: const TextStyle(color: Color(0xFF8A6A58)),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(14),
                           borderSide: const BorderSide(
@@ -312,9 +374,7 @@ class _TambahPageState extends State<TambahPage> {
                       ),
                     ),
                   ),
-
                   const SizedBox(width: 20),
-
                   const CircleAvatar(
                     radius: 24,
                     backgroundColor: Color(0xFF8A6A58),
@@ -344,39 +404,25 @@ class _TambahPageState extends State<TambahPage> {
 
     return Row(
       children: [
-        Icon(
-          icon,
-          color: textColor,
-        ),
-
+        Icon(icon, color: textColor),
         const SizedBox(width: 22),
-
         Expanded(
           child: TextField(
             controller: controller,
             keyboardType: keyboardType,
-            style: const TextStyle(
-              color: textColor,
-            ),
+            style: const TextStyle(color: textColor),
             decoration: InputDecoration(
               filled: true,
               fillColor: cardColor,
               hintText: hint,
-              hintStyle: const TextStyle(
-                color: Color(0xFF8A6A58),
-              ),
+              hintStyle: const TextStyle(color: Color(0xFF8A6A58)),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(14),
-                borderSide: const BorderSide(
-                  color: Color(0xFF8A6A58),
-                ),
+                borderSide: const BorderSide(color: Color(0xFF8A6A58)),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(14),
-                borderSide: const BorderSide(
-                  color: orange,
-                  width: 2,
-                ),
+                borderSide: const BorderSide(color: orange, width: 2),
               ),
             ),
           ),
@@ -398,9 +444,7 @@ class _TambahPageState extends State<TambahPage> {
         child: Container(
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            color: selected
-                ? const Color(0xFF8A6A58)
-                : Colors.transparent,
+            color: selected ? const Color(0xFF8A6A58) : Colors.transparent,
             borderRadius: BorderRadius.circular(24),
           ),
           child: Text(
