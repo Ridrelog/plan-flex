@@ -26,15 +26,16 @@ class _DetailPageState extends State<DetailPage> {
   final TextEditingController nominalController = TextEditingController();
   final TextEditingController keteranganController = TextEditingController();
 
-  static const bgColor = Color(0xFFD6B18B);
-  static const cardColor = Color(0xFFE7D3B5);
-  static const darkColor = Color(0xFF2E211C);
-  static const darkColor2 = Color(0xFF241A16);
+  static const bgColor = Color(0xFFE1BA92);
+  static const cardColor = Color(0xFFF1DCBA);
+  static const softCardColor = Color(0xFFE7C49F);
+  static const selectedColor = Color(0xFFF5E4C8);
   static const brownColor = Color(0xFF6B4B3E);
   static const textColor = Color(0xFF5A4034);
-  static const creamColor = Color(0xFFEEDBC8);
-  static const borderColor = Color(0xFFC8A98D);
+  static const borderColor = Color(0xFFB58A6B);
   static const buttonColor = Color(0xFFFFB86F);
+  static const greenColor = Color(0xFF2F8F46);
+  static const redColor = Color(0xFFC35A5A);
 
   @override
   void initState() {
@@ -207,7 +208,7 @@ class _DetailPageState extends State<DetailPage> {
   void tampilDialogCatatanTabungan() {
     showDialog(
       context: context,
-      barrierColor: Colors.black.withOpacity(0.75),
+      barrierColor: Colors.black.withOpacity(0.45),
       builder: (context) {
         return StatefulBuilder(
           builder: (context, setDialogState) {
@@ -224,7 +225,7 @@ class _DetailPageState extends State<DetailPage> {
                 child: Container(
                   padding: const EdgeInsets.fromLTRB(26, 24, 26, 20),
                   decoration: BoxDecoration(
-                    color: darkColor,
+                    color: bgColor,
                     borderRadius: BorderRadius.circular(28),
                   ),
                   child: Column(
@@ -233,13 +234,12 @@ class _DetailPageState extends State<DetailPage> {
                       const Text(
                         'Catat Tabungan',
                         style: TextStyle(
-                          color: creamColor,
+                          color: textColor,
                           fontSize: 24,
-                          fontWeight: FontWeight.w500,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                       const SizedBox(height: 28),
-
                       Container(
                         height: 46,
                         decoration: BoxDecoration(
@@ -259,7 +259,7 @@ class _DetailPageState extends State<DetailPage> {
                                   alignment: Alignment.center,
                                   decoration: BoxDecoration(
                                     color: isTambah
-                                        ? brownColor
+                                        ? selectedColor
                                         : Colors.transparent,
                                     borderRadius: const BorderRadius.horizontal(
                                       left: Radius.circular(30),
@@ -268,7 +268,7 @@ class _DetailPageState extends State<DetailPage> {
                                   child: const Text(
                                     '+ Tambah',
                                     style: TextStyle(
-                                      color: creamColor,
+                                      color: textColor,
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
@@ -290,7 +290,7 @@ class _DetailPageState extends State<DetailPage> {
                                   alignment: Alignment.center,
                                   decoration: BoxDecoration(
                                     color: !isTambah
-                                        ? brownColor
+                                        ? selectedColor
                                         : Colors.transparent,
                                     borderRadius: const BorderRadius.horizontal(
                                       right: Radius.circular(30),
@@ -299,7 +299,7 @@ class _DetailPageState extends State<DetailPage> {
                                   child: const Text(
                                     '− Kurangi',
                                     style: TextStyle(
-                                      color: creamColor,
+                                      color: textColor,
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
@@ -309,34 +309,32 @@ class _DetailPageState extends State<DetailPage> {
                           ],
                         ),
                       ),
-
                       const SizedBox(height: 28),
-
                       TextField(
                         controller: nominalController,
                         keyboardType: TextInputType.number,
-                        style: const TextStyle(color: creamColor),
-                        cursorColor: buttonColor,
+                        style: const TextStyle(color: textColor),
+                        cursorColor: brownColor,
                         decoration: InputDecoration(
+                          filled: true,
+                          fillColor: cardColor,
                           prefixIcon: const Icon(
                             Icons.money,
-                            color: borderColor,
+                            color: brownColor,
                           ),
                           hintText: 'Nominal',
-                          hintStyle: const TextStyle(color: borderColor),
+                          hintStyle: const TextStyle(color: brownColor),
                           enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(4),
+                            borderRadius: BorderRadius.circular(8),
                             borderSide: const BorderSide(color: borderColor),
                           ),
                           focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(4),
-                            borderSide: const BorderSide(color: buttonColor),
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: const BorderSide(color: brownColor),
                           ),
                         ),
                       ),
-
                       const SizedBox(height: 10),
-
                       Align(
                         alignment: Alignment.centerLeft,
                         child: Wrap(
@@ -348,33 +346,31 @@ class _DetailPageState extends State<DetailPage> {
                           ],
                         ),
                       ),
-
                       const SizedBox(height: 24),
-
                       TextField(
                         controller: keteranganController,
-                        style: const TextStyle(color: creamColor),
-                        cursorColor: buttonColor,
+                        style: const TextStyle(color: textColor),
+                        cursorColor: brownColor,
                         decoration: InputDecoration(
+                          filled: true,
+                          fillColor: cardColor,
                           prefixIcon: const Icon(
                             Icons.notes,
-                            color: borderColor,
+                            color: brownColor,
                           ),
                           hintText: 'Keterangan',
-                          hintStyle: const TextStyle(color: borderColor),
+                          hintStyle: const TextStyle(color: brownColor),
                           enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(4),
+                            borderRadius: BorderRadius.circular(8),
                             borderSide: const BorderSide(color: borderColor),
                           ),
                           focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(4),
-                            borderSide: const BorderSide(color: buttonColor),
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: const BorderSide(color: brownColor),
                           ),
                         ),
                       ),
-
                       const SizedBox(height: 32),
-
                       Row(
                         children: [
                           Expanded(
@@ -387,7 +383,7 @@ class _DetailPageState extends State<DetailPage> {
                               child: const Text(
                                 'Batal',
                                 style: TextStyle(
-                                  color: buttonColor,
+                                  color: brownColor,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
@@ -398,8 +394,8 @@ class _DetailPageState extends State<DetailPage> {
                             child: ElevatedButton(
                               onPressed: simpanCatatanTabungan,
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: buttonColor,
-                                foregroundColor: darkColor,
+                                backgroundColor: selectedColor,
+                                foregroundColor: textColor,
                                 elevation: 0,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(30),
@@ -416,15 +412,13 @@ class _DetailPageState extends State<DetailPage> {
                           ),
                         ],
                       ),
-
                       const SizedBox(height: 8),
-
                       Text(
                         riwayat.isEmpty
                             ? 'Tidak Ada Riwayat Tabungan'
                             : '${riwayat.length} Riwayat Tabungan',
                         style: const TextStyle(
-                          color: Color(0xFF9E8B7E),
+                          color: brownColor,
                           fontSize: 13,
                         ),
                       ),
@@ -447,13 +441,14 @@ class _DetailPageState extends State<DetailPage> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 9),
         decoration: BoxDecoration(
+          color: cardColor,
           border: Border.all(color: borderColor),
           borderRadius: BorderRadius.circular(8),
         ),
         child: Text(
           value,
           style: const TextStyle(
-            color: creamColor,
+            color: textColor,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -481,7 +476,7 @@ class _DetailPageState extends State<DetailPage> {
         onPressed: tampilDialogCatatanTabungan,
         child: const Icon(
           Icons.edit_note,
-          color: Colors.white,
+          color: selectedColor,
         ),
       ),
       body: SafeArea(
@@ -535,7 +530,6 @@ class _DetailPageState extends State<DetailPage> {
                       ),
                     ),
                     const SizedBox(height: 20),
-
                     Container(
                       margin: const EdgeInsets.symmetric(horizontal: 20),
                       decoration: BoxDecoration(
@@ -600,9 +594,7 @@ class _DetailPageState extends State<DetailPage> {
                                   ),
                                 ),
                                 const SizedBox(height: 20),
-                                const Divider(
-                                  color: Color(0xFFB38B6D),
-                                ),
+                                const Divider(color: borderColor),
                                 const SizedBox(height: 12),
                                 _infoRow('Tanggal Dibuat', '12 Mei'),
                                 const SizedBox(height: 12),
@@ -623,14 +615,11 @@ class _DetailPageState extends State<DetailPage> {
                         ],
                       ),
                     ),
-
                     const SizedBox(height: 20),
-
                     _riwayatCard(
                       target: target,
                       terkumpul: terkumpul,
                     ),
-
                     const SizedBox(height: 40),
                   ],
                 ),
@@ -652,7 +641,7 @@ class _DetailPageState extends State<DetailPage> {
       margin: const EdgeInsets.symmetric(horizontal: 20),
       padding: const EdgeInsets.fromLTRB(18, 20, 18, 18),
       decoration: BoxDecoration(
-        color: darkColor2,
+        color: cardColor,
         borderRadius: BorderRadius.circular(20),
       ),
       child: Column(
@@ -665,7 +654,7 @@ class _DetailPageState extends State<DetailPage> {
                     const Text(
                       'Terkumpul',
                       style: TextStyle(
-                        color: creamColor,
+                        color: textColor,
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
                       ),
@@ -674,7 +663,7 @@ class _DetailPageState extends State<DetailPage> {
                     Text(
                       'Rp${formatRupiah(terkumpul)}',
                       style: const TextStyle(
-                        color: Color(0xFF8EEA8E),
+                        color: greenColor,
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),
@@ -685,7 +674,7 @@ class _DetailPageState extends State<DetailPage> {
               Container(
                 width: 1,
                 height: 52,
-                color: Color(0xFF4A3A32),
+                color: borderColor,
               ),
               Expanded(
                 child: Column(
@@ -693,7 +682,7 @@ class _DetailPageState extends State<DetailPage> {
                     const Text(
                       'Kekurangan',
                       style: TextStyle(
-                        color: creamColor,
+                        color: textColor,
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
                       ),
@@ -702,7 +691,7 @@ class _DetailPageState extends State<DetailPage> {
                     Text(
                       'Rp${formatRupiah(kekurangan < 0 ? 0 : kekurangan)}',
                       style: const TextStyle(
-                        color: Color(0xFFFFA8A8),
+                        color: redColor,
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),
@@ -713,15 +702,14 @@ class _DetailPageState extends State<DetailPage> {
             ],
           ),
           const SizedBox(height: 18),
-          const Divider(color: Color(0xFF4A3A32)),
-
+          const Divider(color: borderColor),
           if (riwayat.isEmpty)
             const Padding(
               padding: EdgeInsets.only(top: 16, bottom: 6),
               child: Text(
                 'Tidak Ada Riwayat Tabungan',
                 style: TextStyle(
-                  color: Color(0xFF9E8B7E),
+                  color: brownColor,
                   fontSize: 14,
                 ),
               ),
@@ -731,9 +719,7 @@ class _DetailPageState extends State<DetailPage> {
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               itemCount: riwayat.length,
-              separatorBuilder: (_, __) => const Divider(
-                color: Color(0xFF4A3A32),
-              ),
+              separatorBuilder: (_, __) => const Divider(color: borderColor),
               itemBuilder: (context, index) {
                 final data = riwayat[index];
 
@@ -756,7 +742,7 @@ class _DetailPageState extends State<DetailPage> {
                             Text(
                               formatTanggal(tanggal),
                               style: const TextStyle(
-                                color: creamColor,
+                                color: textColor,
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -767,7 +753,7 @@ class _DetailPageState extends State<DetailPage> {
                                 child: Text(
                                   keterangan.toString(),
                                   style: const TextStyle(
-                                    color: creamColor,
+                                    color: brownColor,
                                     fontSize: 15,
                                   ),
                                 ),
@@ -778,9 +764,7 @@ class _DetailPageState extends State<DetailPage> {
                       Text(
                         '${isTambahData ? '+' : '-'} ${formatRupiah(nominal)}',
                         style: TextStyle(
-                          color: isTambahData
-                              ? const Color(0xFF8EEA8E)
-                              : const Color(0xFFFF8A8A),
+                          color: isTambahData ? greenColor : redColor,
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                         ),
