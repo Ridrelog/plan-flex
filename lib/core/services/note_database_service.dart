@@ -21,7 +21,7 @@ class NoteDatabaseService {
 
     return await openDatabase(
       path,
-      version: 2,
+      version: 3,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -45,6 +45,17 @@ class NoteDatabaseService {
         gambar TEXT
       )
     ''');
+
+    await db.execute('''
+      CREATE TABLE riwayat_tabungan (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        tabungan_id INTEGER NOT NULL,
+        nominal REAL NOT NULL,
+        tipe TEXT NOT NULL,
+        keterangan TEXT,
+        tanggal TEXT NOT NULL
+      )
+    ''');
   }
 
   Future<void> _upgradeDB(Database db, int oldVersion, int newVersion) async {
@@ -60,6 +71,19 @@ class NoteDatabaseService {
         )
       ''');
     }
+
+    if (oldVersion < 3) {
+      await db.execute('''
+        CREATE TABLE riwayat_tabungan (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          tabungan_id INTEGER NOT NULL,
+          nominal REAL NOT NULL,
+          tipe TEXT NOT NULL,
+          keterangan TEXT,
+          tanggal TEXT NOT NULL
+        )
+      ''');
+    }
   }
 
   Future<Map<String, String>> getAllNotes() async {
@@ -67,8 +91,7 @@ class NoteDatabaseService {
     final result = await db.query('notes');
 
     return {
-      for (final item in result)
-        item['date'] as String: item['note'] as String,
+      for (final item in result) item['date'] as String: item['note'] as String,
     };
   }
 
@@ -107,6 +130,7 @@ class NoteDatabaseService {
 
   Future<void> updateTabungan(int id, Map<String, dynamic> data) async {
     final db = await database;
+
     await db.update(
       'tabungan',
       data,
@@ -115,8 +139,44 @@ class NoteDatabaseService {
     );
   }
 
+  Future<int> updateTerkumpul(int id, double terkumpul) async {
+    final db = await database;
+
+    return await db.update(
+      'tabungan',
+      {
+        'terkumpul': terkumpul,
+      },
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  Future<void> insertRiwayatTabungan(Map<String, dynamic> data) async {
+    final db = await database;
+    await db.insert('riwayat_tabungan', data);
+  }
+
+  Future<List<Map<String, dynamic>>> getRiwayatTabungan(int tabunganId) async {
+    final db = await database;
+
+    return await db.query(
+      'riwayat_tabungan',
+      where: 'tabungan_id = ?',
+      whereArgs: [tabunganId],
+      orderBy: 'id DESC',
+    );
+  }
+
   Future<void> deleteTabungan(int id) async {
     final db = await database;
+
+    await db.delete(
+      'riwayat_tabungan',
+      where: 'tabungan_id = ?',
+      whereArgs: [id],
+    );
+
     await db.delete(
       'tabungan',
       where: 'id = ?',

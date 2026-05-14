@@ -113,9 +113,8 @@ class _TabunganPageState extends State<TabunganPage> {
                               borderRadius: BorderRadius.circular(16),
                               child: Image.file(
                                 File(item['gambar']),
-                                height: 160,
                                 width: double.infinity,
-                                fit: BoxFit.cover,
+                                fit: BoxFit.fitWidth,
                               ),
                             ),
 

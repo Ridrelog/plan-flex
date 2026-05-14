@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../core/services/note_database_service.dart';
@@ -29,31 +30,11 @@ class _TambahPageState extends State<TambahPage> {
   String benderaMataUang = '🇮🇩';
 
   final List<Map<String, String>> daftarMataUang = [
-    {
-      'nama': 'Indonesia Rupiah',
-      'simbol': 'Rp',
-      'bendera': '🇮🇩',
-    },
-    {
-      'nama': 'US Dollar',
-      'simbol': '\$',
-      'bendera': '🇺🇸',
-    },
-    {
-      'nama': 'Euro',
-      'simbol': '€',
-      'bendera': '🇪🇺',
-    },
-    {
-      'nama': 'Japanese Yen',
-      'simbol': '¥',
-      'bendera': '🇯🇵',
-    },
-    {
-      'nama': 'Malaysian Ringgit',
-      'simbol': 'RM',
-      'bendera': '🇲🇾',
-    },
+    {'nama': 'Indonesia Rupiah', 'simbol': 'Rp', 'bendera': '🇮🇩'},
+    {'nama': 'US Dollar', 'simbol': '\$', 'bendera': '🇺🇸'},
+    {'nama': 'Euro', 'simbol': '€', 'bendera': '🇪🇺'},
+    {'nama': 'Japanese Yen', 'simbol': '¥', 'bendera': '🇯🇵'},
+    {'nama': 'Malaysian Ringgit', 'simbol': 'RM', 'bendera': '🇲🇾'},
   ];
 
   @override
@@ -62,25 +43,189 @@ class _TambahPageState extends State<TambahPage> {
 
     if (widget.item != null) {
       namaController.text = widget.item!['nama'];
-
       targetController.text =
           (widget.item!['target'] as num).toStringAsFixed(0);
-
       nominalController.text =
           (widget.item!['terkumpul'] as num).toStringAsFixed(0);
-
       gambarPath = widget.item!['gambar'];
     }
   }
 
-  Future<void> pilihGambar() async {
-    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+  void pilihGambar() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFFE7D3B5),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Wrap(
+            children: [
+              ListTile(
+                leading: const Icon(
+                  Icons.camera_alt,
+                  color: Color(0xFF5A4034),
+                ),
+                title: const Text(
+                  'Ambil dari Kamera',
+                  style: TextStyle(
+                    color: Color(0xFF5A4034),
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                onTap: () async {
+                  Navigator.pop(context);
+                  await ambilGambar(ImageSource.camera);
+                },
+              ),
+              ListTile(
+                leading: const Icon(
+                  Icons.photo_library,
+                  color: Color(0xFF5A4034),
+                ),
+                title: const Text(
+                  'Pilih dari Galeri',
+                  style: TextStyle(
+                    color: Color(0xFF5A4034),
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                onTap: () async {
+                  Navigator.pop(context);
+                  await ambilGambar(ImageSource.gallery);
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
 
-    if (image != null) {
+  Future<void> ambilGambar(ImageSource source) async {
+    final XFile? image = await picker.pickImage(
+      source: source,
+      imageQuality: 90,
+    );
+
+    if (image == null) return;
+    if (!mounted) return;
+
+    final CropAspectRatio? ratio = await pilihRasioCrop();
+
+    if (ratio == null) return;
+
+    final CroppedFile? croppedImage = await ImageCropper().cropImage(
+      sourcePath: image.path,
+      aspectRatio: ratio,
+      uiSettings: [
+        AndroidUiSettings(
+          toolbarTitle: 'Potong Gambar',
+          toolbarColor: const Color(0xFF6B4B3E),
+          toolbarWidgetColor: Colors.white,
+          activeControlsWidgetColor: const Color(0xFF6B4B3E),
+          lockAspectRatio: true,
+        ),
+        IOSUiSettings(
+          title: 'Potong Gambar',
+          aspectRatioLockEnabled: true,
+          resetAspectRatioEnabled: false,
+        ),
+      ],
+    );
+
+    if (croppedImage != null) {
       setState(() {
-        gambarPath = image.path;
+        gambarPath = croppedImage.path;
       });
     }
+  }
+
+  Future<CropAspectRatio?> pilihRasioCrop() {
+    return showModalBottomSheet<CropAspectRatio>(
+      context: context,
+      backgroundColor: const Color(0xFFE7D3B5),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Wrap(
+            children: [
+              const Padding(
+                padding: EdgeInsets.fromLTRB(20, 18, 20, 8),
+                child: Text(
+                  'Pilih Rasio Gambar',
+                  style: TextStyle(
+                    color: Color(0xFF5A4034),
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              ListTile(
+                leading: const Icon(
+                  Icons.crop_square,
+                  color: Color(0xFF5A4034),
+                ),
+                title: const Text(
+                  '1:1',
+                  style: TextStyle(
+                    color: Color(0xFF5A4034),
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                onTap: () {
+                  Navigator.pop(
+                    context,
+                    const CropAspectRatio(ratioX: 1, ratioY: 1),
+                  );
+                },
+              ),
+              ListTile(
+                leading: const Icon(
+                  Icons.crop_portrait,
+                  color: Color(0xFF5A4034),
+                ),
+                title: const Text(
+                  '9:16',
+                  style: TextStyle(
+                    color: Color(0xFF5A4034),
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                onTap: () {
+                  Navigator.pop(
+                    context,
+                    const CropAspectRatio(ratioX: 9, ratioY: 16),
+                  );
+                },
+              ),
+              ListTile(
+                leading: const Icon(
+                  Icons.crop_16_9,
+                  color: Color(0xFF5A4034),
+                ),
+                title: const Text(
+                  '16:9',
+                  style: TextStyle(
+                    color: Color(0xFF5A4034),
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                onTap: () {
+                  Navigator.pop(
+                    context,
+                    const CropAspectRatio(ratioX: 16, ratioY: 9),
+                  );
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   void pilihMataUang() {
@@ -219,24 +364,26 @@ class _TambahPageState extends State<TambahPage> {
               GestureDetector(
                 onTap: pilihGambar,
                 child: Container(
-                  height: 190,
                   width: double.infinity,
                   decoration: BoxDecoration(
                     color: cardColor,
                     borderRadius: BorderRadius.circular(18),
                   ),
                   child: gambarPath == null
-                      ? const Icon(
-                          Icons.add_photo_alternate_outlined,
-                          color: orange,
-                          size: 52,
+                      ? const SizedBox(
+                          height: 190,
+                          child: Icon(
+                            Icons.add_photo_alternate_outlined,
+                            color: orange,
+                            size: 52,
+                          ),
                         )
                       : ClipRRect(
                           borderRadius: BorderRadius.circular(18),
                           child: Image.file(
                             File(gambarPath!),
-                            fit: BoxFit.cover,
                             width: double.infinity,
+                            fit: BoxFit.fitWidth,
                           ),
                         ),
                 ),
