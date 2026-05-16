@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:plan_flex/features/kakulator/kakulator_view.dart';
 import 'core/widgets/app_drawer.dart';
 import 'features/home/home_page.dart';
 import 'features/tanggal/tanggal_page.dart';
@@ -15,13 +16,14 @@ class MainPage extends StatefulWidget {
 class _MainPageState extends State<MainPage> {
   int selectedIndex = 0;
 
-  final List<String> titles = ['Home', 'Tanggal', 'Catatan', 'Tabungan'];
+  final List<String> titles = ['Home', 'Tanggal', 'Catatan', 'Tabungan', 'Kalkulator'];
 
   final List<Widget> pages = [
     const HomePage(),
     const TanggalPage(),
     const CatatanPage(),
     const TabunganPage(),
+    const KalkulatorPage(),
   ];
 
   void changePage(int index) {
