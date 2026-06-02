@@ -83,7 +83,7 @@ class AppDrawer extends StatelessWidget {
 
             const SizedBox(height: 12),
 
-            // ===== MENU ===== //
+            // === MENU === //
             drawerItem(
               icon: Icons.home,
               title: 'Home',
@@ -126,7 +126,7 @@ class AppDrawer extends StatelessWidget {
     );
   }
 
-  // ===== ITEM MENU ===== //
+  // === ITEM MENU === //
 
   Widget drawerItem({
     required IconData icon,
