@@ -1,0 +1,609 @@
+import 'dart:io';
+
+import 'package:flutter/material.dart';
+import 'package:image_cropper/image_cropper.dart';
+import 'package:image_picker/image_picker.dart';
+
+import '../repository/tabungan_repository.dart';
+
+class TambahPage extends StatefulWidget {
+  final Map<String, dynamic>? item;
+
+  const TambahPage({super.key, this.item});
+
+  @override
+  State<TambahPage> createState() => _TambahPageState();
+}
+
+class _TambahPageState extends State<TambahPage> {
+  final namaController = TextEditingController();
+  final targetController = TextEditingController();
+  final nominalController = TextEditingController();
+
+  final ImagePicker picker = ImagePicker();
+  final TabunganRepository repository = TabunganRepository();
+
+  String? gambarPath;
+  String rencana = 'Harian';
+
+  String mataUang = 'Indonesia Rupiah';
+  String simbolMataUang = 'Rp';
+  String benderaMataUang = '🇮🇩';
+
+  final List<Map<String, String>> daftarMataUang = [
+    {'nama': 'Indonesia Rupiah', 'simbol': 'Rp', 'bendera': '🇮🇩'},
+    {'nama': 'US Dollar', 'simbol': '\$', 'bendera': '🇺🇸'},
+    {'nama': 'Euro', 'simbol': '€', 'bendera': '🇪🇺'},
+    {'nama': 'Japanese Yen', 'simbol': '¥', 'bendera': '🇯🇵'},
+    {'nama': 'Malaysian Ringgit', 'simbol': 'RM', 'bendera': '🇲🇾'},
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+
+    if (widget.item != null) {
+      namaController.text = widget.item!['nama'];
+      targetController.text =
+          (widget.item!['target'] as num).toStringAsFixed(0);
+      nominalController.text =
+          (widget.item!['terkumpul'] as num).toStringAsFixed(0);
+      gambarPath = widget.item!['gambar'];
+    }
+  }
+
+  void pilihGambar() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFFDAF1DE),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Wrap(
+            children: [
+              ListTile(
+                leading: const Icon(
+                  Icons.camera_alt,
+                  color: Color(0xFF051F20),
+                ),
+                title: const Text(
+                  'Ambil dari Kamera',
+                  style: TextStyle(
+                    color: Color(0xFF051F20),
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                onTap: () async {
+                  Navigator.pop(context);
+                  await ambilGambar(ImageSource.camera);
+                },
+              ),
+              ListTile(
+                leading: const Icon(
+                  Icons.photo_library,
+                  color: Color(0xFF051F20),
+                ),
+                title: const Text(
+                  'Pilih dari Galeri',
+                  style: TextStyle(
+                    color: Color(0xFF051F20),
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                onTap: () async {
+                  Navigator.pop(context);
+                  await ambilGambar(ImageSource.gallery);
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> ambilGambar(ImageSource source) async {
+    final XFile? image = await picker.pickImage(
+      source: source,
+      imageQuality: 90,
+    );
+
+    if (image == null) return;
+    if (!mounted) return;
+
+    final CropAspectRatio? ratio = await pilihRasioCrop();
+
+    if (ratio == null) return;
+
+    final CroppedFile? croppedImage = await ImageCropper().cropImage(
+      sourcePath: image.path,
+      aspectRatio: ratio,
+      uiSettings: [
+        AndroidUiSettings(
+          toolbarTitle: 'Potong Gambar',
+          toolbarColor: const Color(0xFF051F20),
+          toolbarWidgetColor: const Color(0xFFDAF1DE),
+          activeControlsWidgetColor: const Color(0xFF051F20),
+          lockAspectRatio: true,
+        ),
+        IOSUiSettings(
+          title: 'Potong Gambar',
+          aspectRatioLockEnabled: true,
+          resetAspectRatioEnabled: false,
+        ),
+      ],
+    );
+
+    if (croppedImage != null) {
+      setState(() {
+        gambarPath = croppedImage.path;
+      });
+    }
+  }
+
+  Future<CropAspectRatio?> pilihRasioCrop() {
+    return showModalBottomSheet<CropAspectRatio>(
+      context: context,
+      backgroundColor: const Color(0xFFDAF1DE),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Wrap(
+            children: [
+              const Padding(
+                padding: EdgeInsets.fromLTRB(20, 18, 20, 8),
+                child: Text(
+                  'Pilih Rasio Gambar',
+                  style: TextStyle(
+                    color: Color(0xFF051F20),
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              ListTile(
+                leading: const Icon(
+                  Icons.crop_square,
+                  color: Color(0xFF051F20),
+                ),
+                title: const Text(
+                  '1:1',
+                  style: TextStyle(
+                    color: Color(0xFF051F20),
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                onTap: () {
+                  Navigator.pop(
+                    context,
+                    const CropAspectRatio(ratioX: 1, ratioY: 1),
+                  );
+                },
+              ),
+              ListTile(
+                leading: const Icon(
+                  Icons.crop_portrait,
+                  color: Color(0xFF051F20),
+                ),
+                title: const Text(
+                  '9:16',
+                  style: TextStyle(
+                    color: Color(0xFF051F20),
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                onTap: () {
+                  Navigator.pop(
+                    context,
+                    const CropAspectRatio(ratioX: 9, ratioY: 16),
+                  );
+                },
+              ),
+              ListTile(
+                leading: const Icon(
+                  Icons.crop_16_9,
+                  color: Color(0xFF051F20),
+                ),
+                title: const Text(
+                  '16:9',
+                  style: TextStyle(
+                    color: Color(0xFF051F20),
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                onTap: () {
+                  Navigator.pop(
+                    context,
+                    const CropAspectRatio(ratioX: 16, ratioY: 9),
+                  );
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void pilihMataUang() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFFDAF1DE),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return ListView.builder(
+          shrinkWrap: true,
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          itemCount: daftarMataUang.length,
+          itemBuilder: (context, index) {
+            final item = daftarMataUang[index];
+
+            return ListTile(
+              leading: Text(
+                item['bendera']!,
+                style: const TextStyle(fontSize: 28),
+              ),
+              title: Text(
+                item['nama']!,
+                style: const TextStyle(
+                  color: Color(0xFF051F20),
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              subtitle: Text(
+                item['simbol']!,
+                style: const TextStyle(
+                  color: Color(0xFF8EB69B),
+                ),
+              ),
+              onTap: () {
+                setState(() {
+                  mataUang = item['nama']!;
+                  simbolMataUang = item['simbol']!;
+                  benderaMataUang = item['bendera']!;
+                });
+
+                Navigator.pop(context);
+              },
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<void> simpanTabungan() async {
+    final nama = namaController.text.trim();
+    final target = double.tryParse(targetController.text) ?? 0;
+    final nominal = double.tryParse(nominalController.text) ?? 0;
+
+    if (nama.isEmpty || target <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Data belum lengkap')),
+      );
+      return;
+    }
+
+    final data = {
+      'nama': nama,
+      'target': target,
+      'terkumpul': nominal,
+      'hari': 1,
+      'gambar': gambarPath,
+    };
+
+    if (widget.item == null) {
+      await repository.insertTabungan(data);
+    } else {
+      await repository.updateTabungan(
+        widget.item!['id'],
+        data,
+      );
+    }
+
+    if (!mounted) return;
+    Navigator.pop(context, true);
+  }
+
+  @override
+  void dispose() {
+    namaController.dispose();
+    targetController.dispose();
+    nominalController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    const bgColor = Color(0xFFDAF1DE);
+    const cardColor = Color(0xFFDAF1DE);
+    const orange = Color(0xFF051F20);
+    const textColor = Color(0xFF051F20);
+
+    return Scaffold(
+      backgroundColor: bgColor,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(24, 16, 24, 30),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.arrow_back_ios, color: textColor),
+                  ),
+                  const Spacer(),
+                  ElevatedButton(
+                    onPressed: simpanTabungan,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: orange,
+                      foregroundColor: const Color(0xFFDAF1DE),
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(28),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 28,
+                        vertical: 14,
+                      ),
+                    ),
+                    child: Text(widget.item == null ? 'Simpan' : 'Update'),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 40),
+
+              GestureDetector(
+                onTap: pilihGambar,
+                child: Container(
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: cardColor,
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                  child: gambarPath == null
+                      ? const SizedBox(
+                          height: 190,
+                          child: Icon(
+                            Icons.add_photo_alternate_outlined,
+                            color: orange,
+                            size: 52,
+                          ),
+                        )
+                      : ClipRRect(
+                          borderRadius: BorderRadius.circular(18),
+                          child: Image.file(
+                            File(gambarPath!),
+                            width: double.infinity,
+                            fit: BoxFit.fitWidth,
+                          ),
+                        ),
+                ),
+              ),
+
+              const SizedBox(height: 32),
+
+              _inputField(
+                icon: Icons.short_text,
+                hint: 'Nama Tabungan',
+                controller: namaController,
+              ),
+
+              const SizedBox(height: 22),
+
+              _inputField(
+                icon: Icons.account_balance_wallet_outlined,
+                hint: 'Target Tabungan',
+                controller: targetController,
+                keyboardType: TextInputType.number,
+              ),
+
+              const SizedBox(height: 22),
+
+              const Text(
+                'Mata Uang',
+                style: TextStyle(
+                  color: textColor,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+
+              const SizedBox(height: 8),
+
+              GestureDetector(
+                onTap: pilihMataUang,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  height: 62,
+                  decoration: BoxDecoration(
+                    color: cardColor,
+                    border: Border.all(color: Color(0xFF8EB69B)),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Row(
+                    children: [
+                      Text(
+                        benderaMataUang,
+                        style: const TextStyle(fontSize: 24),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Text(
+                          '$mataUang ( $simbolMataUang )',
+                          style: const TextStyle(
+                            color: textColor,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                      const Icon(
+                        Icons.keyboard_arrow_down,
+                        color: textColor,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 32),
+
+              const Divider(color: Color(0xFF8EB69B)),
+
+              const SizedBox(height: 18),
+
+              const Text(
+                'Rencana Pengisian',
+                style: TextStyle(
+                  color: textColor,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+
+              const SizedBox(height: 18),
+
+              Container(
+                height: 48,
+                decoration: BoxDecoration(
+                  border: Border.all(color: const Color(0xFF8EB69B)),
+                  borderRadius: BorderRadius.circular(28),
+                ),
+                child: Row(
+                  children: [
+                    _tabButton('Harian'),
+                    _tabButton('Mingguan'),
+                    _tabButton('Bulanan'),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 38),
+
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: nominalController,
+                      keyboardType: TextInputType.number,
+                      style: const TextStyle(color: textColor),
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: cardColor,
+                        prefixText: '$simbolMataUang ',
+                        prefixStyle: const TextStyle(
+                          color: textColor,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        hintText: 'Nominal Pengisian',
+                        hintStyle: const TextStyle(color: Color(0xFF8EB69B)),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: const BorderSide(
+                            color: Color(0xFF8EB69B),
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: const BorderSide(
+                            color: orange,
+                            width: 2,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 20),
+                  const CircleAvatar(
+                    radius: 24,
+                    backgroundColor: Color(0xFF8EB69B),
+                    child: Icon(
+                      Icons.event_available,
+                      color: const Color(0xFFDAF1DE),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _inputField({
+    required IconData icon,
+    required String hint,
+    required TextEditingController controller,
+    TextInputType keyboardType = TextInputType.text,
+  }) {
+    const textColor = Color(0xFF051F20);
+    const orange = Color(0xFF051F20);
+    const cardColor = Color(0xFFDAF1DE);
+
+    return Row(
+      children: [
+        Icon(icon, color: textColor),
+        const SizedBox(width: 22),
+        Expanded(
+          child: TextField(
+            controller: controller,
+            keyboardType: keyboardType,
+            style: const TextStyle(color: textColor),
+            decoration: InputDecoration(
+              filled: true,
+              fillColor: cardColor,
+              hintText: hint,
+              hintStyle: const TextStyle(color: Color(0xFF8EB69B)),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+                borderSide: const BorderSide(color: Color(0xFF8EB69B)),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+                borderSide: const BorderSide(color: orange, width: 2),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _tabButton(String value) {
+    final selected = rencana == value;
+
+    return Expanded(
+      child: GestureDetector(
+        onTap: () {
+          setState(() {
+            rencana = value;
+          });
+        },
+        child: Container(
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: selected ? const Color(0xFF8EB69B) : Colors.transparent,
+            borderRadius: BorderRadius.circular(24),
+          ),
+          child: Text(
+            value,
+            style: TextStyle(
+              color: selected ? const Color(0xFFDAF1DE) : const Color(0xFF051F20),
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

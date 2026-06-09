@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "928976370851",
+    "project_id": "plan-flex",
+    "storage_bucket": "plan-flex.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:928976370851:android:5a04bce89a40f26cccd316",
+        "android_client_info": {
+          "package_name": "com.example.plan_flex"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBMNUNLrBZp2WP1I3jGsNSdS6jYM4oq0rs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
